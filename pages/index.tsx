@@ -24,9 +24,12 @@ const Home: NextComponentType<NextPageContext, InitialProps, InitialProps> = ({
         ></link>
       </Head>
 
+      <div className="text-center text-5xl text-gray-200 mt-8">
+        {`Ryan's fav albums`.toUpperCase()}
+      </div>
+
       <div className="container mx-auto md mt-8 flex flex-row flex-wrap">
         {playlist.map((track, ndx) => {
-          console.log({ track });
           const rank = ndx + 1;
           return (
             <div
