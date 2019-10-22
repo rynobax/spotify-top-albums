@@ -65,7 +65,7 @@ async function getClient() {
   });
 }
 
-const qualifiers = [" (Deluxe)", " (Extended)"];
+const qualifiers = [/ (\(.*\))/];
 const removeQualifiers = (name: string) =>
   qualifiers.reduce((n, q) => n.replace(q, ""), name);
 
@@ -86,6 +86,7 @@ export async function getPlaylist(playlistId: string) {
         return {
           artist: artists[0].name,
           album: removeQualifiers(album.name),
+          // 0: 640px, 1: 300px, 2: 64px
           img: album.images[1].url,
           uri: album.uri,
           palette,
