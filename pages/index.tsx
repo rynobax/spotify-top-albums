@@ -33,11 +33,11 @@ const Home: NextComponentType<NextPageContext, InitialProps, InitialProps> = ({
           const rank = ndx + 1;
           return (
             <div
-              className="rounded my-4 rounded-lg flex-shrink-0 bg-gray-100 w-64 overflow-hidden mx-8 flex flex-col"
+              className="rounded my-4 rounded-lg flex-shrink-0 w-64 overflow-hidden mx-8 flex flex-col"
               key={track.album}
             >
               <img className="flex-initial w-64 h-64" src={track.img} />
-              <div className="p-2 flex flex-col flex-1">
+              <div className="p-2 flex flex-col flex-1 bg-gray-100">
                 <div className="flex flex-row align-middle flex-0">
                   <div className="flex flex-col flex-0 h-full justify-center">
                     <div className="flex-grow-0">
