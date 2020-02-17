@@ -28,17 +28,17 @@ const Home: NextComponentType<NextPageContext, InitialProps, InitialProps> = ({
         {`Ryan's fav albums`.toUpperCase()}
       </div>
 
-      <div className="container mx-auto md mt-8 flex flex-row flex-wrap justify-center">
+      <div className="container mx-auto md mt-8 flex flex-row flex-wrap justify-center subpixel-antialiased">
         {playlist.map((track, ndx) => {
           const rank = ndx + 1;
           return (
             <div
-              className="rounded my-4 rounded-lg flex-shrink-0 bg-gray-100 w-64 overflow-hidden mx-8"
+              className="rounded my-4 rounded-lg flex-shrink-0 bg-gray-100 w-64 overflow-hidden mx-8 flex flex-col"
               key={track.album}
             >
               <img className="flex-initial w-64 h-64" src={track.img} />
-              <div className="p-2">
-                <div className="flex flex-row align-middle">
+              <div className="p-2 flex flex-col flex-1">
+                <div className="flex flex-row align-middle flex-0">
                   <div className="flex flex-col flex-0 h-full justify-center">
                     <div className="flex-grow-0">
                       <span className="text-xl">#</span>
@@ -46,12 +46,16 @@ const Home: NextComponentType<NextPageContext, InitialProps, InitialProps> = ({
                     </div>
                   </div>
                   <div className="flex-1 flex flex-col pl-2">
-                    <div className="h-24 text-xl text-gray-800 font-bold leading-tight text-right">
+                    <div className="text-xl text-gray-800 font-bold leading-tight text-right">
                       {track.album}
                     </div>
                   </div>
                 </div>
-                <div className="h-6 text-xl text-gray-600">{track.artist}</div>
+                <div className="flex-1 flex flex-col justify-end">
+                  <div className="text-xl text-gray-600">
+                    {track.artists.join(", ")}
+                  </div>
+                </div>
               </div>
             </div>
           );

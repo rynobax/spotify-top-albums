@@ -84,7 +84,7 @@ export async function getPlaylist(playlistId: string) {
         const v = Vibrant.from(album.images[1].url);
         const palette = await v.getPalette();
         return {
-          artist: artists[0].name,
+          artists: artists.map(a => a.name),
           album: removeQualifiers(album.name),
           // 0: 640px, 1: 300px, 2: 64px
           img: album.images[1].url,
