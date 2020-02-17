@@ -14,7 +14,7 @@ const Home: NextComponentType<NextPageContext, InitialProps, InitialProps> = ({
   playlist,
 }) => {
   return (
-    <div>
+    <div className="bg-gray-800">
       <Head>
         <title>Home</title>
         <link rel="icon" href="/public/favicon.ico" />
@@ -24,11 +24,11 @@ const Home: NextComponentType<NextPageContext, InitialProps, InitialProps> = ({
         ></link>
       </Head>
 
-      <div className="text-center text-5xl text-gray-200 mt-8">
+      <div className="text-center text-5xl text-gray-200 pt-8">
         {`Ryan's fav albums`.toUpperCase()}
       </div>
 
-      <div className="container mx-auto md mt-8 flex flex-row flex-wrap">
+      <div className="container mx-auto md mt-8 flex flex-row flex-wrap justify-center">
         {playlist.map((track, ndx) => {
           const rank = ndx + 1;
           return (
@@ -45,8 +45,8 @@ const Home: NextComponentType<NextPageContext, InitialProps, InitialProps> = ({
                       <span className="text-4xl">{rank}</span>
                     </div>
                   </div>
-                  <div className="flex-0 flex flex-col pl-2">
-                    <div className="h-24 text-xl text-gray-800 font-bold leading-tight">
+                  <div className="flex-1 flex flex-col pl-2">
+                    <div className="h-24 text-xl text-gray-800 font-bold leading-tight text-right">
                       {track.album}
                     </div>
                   </div>
@@ -57,8 +57,6 @@ const Home: NextComponentType<NextPageContext, InitialProps, InitialProps> = ({
           );
         })}
       </div>
-
-      <div className="fixed bg-gray-800 inset-0" style={{ zIndex: -1 }} />
     </div>
   );
 };
