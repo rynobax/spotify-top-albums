@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useRef } from "react";
 import Head from "next/head";
 import { NextComponentType, NextPageContext } from "next";
+
+import PlayIcon from "../components/PlayIcon";
 
 import { getPlaylist, Playlist } from "../spotify";
 
@@ -13,6 +15,18 @@ interface InitialProps {
 const Home: NextComponentType<NextPageContext, InitialProps, InitialProps> = ({
   playlist,
 }) => {
+  // Not all tracks have preview
+  const audioRefs = useRef<Array<HTMLAudioElement | null>>([]);
+
+  function playOrPause(i: number) {
+    const refs = audioRefs.current;
+    if (!refs) return;
+    const ref = refs[i];
+    if (!ref) return;
+    if (ref.paused) ref.play();
+    else ref.pause();
+  }
+
   return (
     <div className="bg-gray-800">
       <Head>
@@ -34,9 +48,24 @@ const Home: NextComponentType<NextPageContext, InitialProps, InitialProps> = ({
           return (
             <div
               className="rounded my-4 rounded-lg flex-shrink-0 w-64 overflow-hidden mx-8 flex flex-col"
-              key={track.album}
+              key={track.album.id}
             >
-              <img className="flex-initial w-64 h-64" src={track.img} />
+              <PlayIcon className="w-64 h-64 p-24 absolute" />
+              <img
+                className={
+                  "flex-initial w-64 h-64 z-10" +
+                  (track.preview ? " audio-hover cursor-pointer" : "")
+                }
+                src={track.img}
+                onClick={() => playOrPause(ndx)}
+              />
+              {track.preview && (
+                <audio
+                  src={track.preview}
+                  preload="none"
+                  ref={e => (audioRefs.current[ndx] = e)}
+                />
+              )}
               <div className="p-2 flex flex-col flex-1 bg-gray-100">
                 <div className="flex flex-row align-middle flex-0">
                   <div className="flex flex-col flex-0 h-full justify-center">
@@ -47,13 +76,28 @@ const Home: NextComponentType<NextPageContext, InitialProps, InitialProps> = ({
                   </div>
                   <div className="flex-1 flex flex-col pl-2">
                     <div className="text-xl text-gray-800 font-bold leading-tight text-right">
-                      {track.album}
+                      <a
+                        className="hover:underline hover:text-gray-900"
+                        href={track.album.uri}
+                      >
+                        {track.album.name}
+                      </a>
                     </div>
                   </div>
                 </div>
                 <div className="flex-1 flex flex-col justify-end">
                   <div className="text-xl text-gray-600">
-                    {track.artists.join(", ")}
+                    {track.artists.map((a, i) => (
+                      <React.Fragment key={a.name}>
+                        <a
+                          className="hover:underline hover:text-gray-900"
+                          href={a.uri}
+                        >
+                          {a.name}
+                        </a>
+                        {i !== track.artists.length - 1 && ", "}
+                      </React.Fragment>
+                    ))}
                   </div>
                 </div>
               </div>

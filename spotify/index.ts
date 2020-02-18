@@ -1,23 +1,4 @@
-import axios from "axios";
-const Vibrant: TVibrant = require("node-vibrant");
-
-type Palette = Record<
-  | "DarkMuted"
-  | "DarkVibrant"
-  | "DarkMuted"
-  | "LightMuted"
-  | "Muted"
-  | "Vibrant",
-  { rgb: [number, number, number] }
->;
-
-interface VibrantInstance {
-  getPalette: () => Promise<Palette>;
-}
-
-interface TVibrant {
-  from: (url: string) => VibrantInstance;
-}
+import fetch from "isomorphic-unfetch";
 
 import { PlaylistResponse } from "./types/playlist";
 
@@ -25,6 +6,7 @@ import { PlaylistResponse } from "./types/playlist";
 
 const ID = process.env.ID;
 const SECRET = process.env.SECRET;
+const REFRESH_TOKEN = process.env.REFRESH_TOKEN;
 
 const inNode = typeof window === "undefined";
 
@@ -37,32 +19,53 @@ function b64Encode(str: string) {
 }
 
 const BASIC_AUTH = b64Encode(`${ID}:${SECRET}`);
+console.log(BASIC_AUTH);
 
-const spotifyAuth = axios.create({
-  baseURL: "https://accounts.spotify.com/api/",
-});
+if (inNode) {
+  if (!ID || !SECRET || !REFRESH_TOKEN)
+    throw Error("Did not find one of ID, SECRET, REFRESH_TOKEN, check .env");
+}
 
-if (!ID || !SECRET) throw Error("Did not find ID or SECRET, check .env");
+function formEncode(obj: { [k: string]: string }) {
+  return Object.entries(obj)
+    .map(([k, v]) => `${k}=${encodeURIComponent(v)}`)
+    .join("&");
+}
 
 async function getAccessTokenFromSpotify() {
-  const res = await spotifyAuth.post("token", "grant_type=client_credentials", {
+  const res = await fetch("https://accounts.spotify.com/api/token", {
+    method: "POST",
     headers: {
       Authorization: `Basic ${BASIC_AUTH}`,
-      "Content-Type": "application/x-www-form-urlencoded",
+      "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
     },
+    body: formEncode({
+      grant_type: "refresh_token",
+      refresh_token: REFRESH_TOKEN,
+    }),
   });
-  return res.data.access_token;
+  if (res.status !== 200) {
+    const data = await res.json();
+    console.error(data);
+    throw Error(`${res.status}: ${res.statusText}`);
+  }
+  const data = await res.json();
+  return data.access_token;
 }
 
 let token: string | null = null;
-async function getClient() {
+async function makeSpotifyReq<T>(url: string) {
   if (!token) {
     token = await getAccessTokenFromSpotify();
   }
-  return axios.create({
-    baseURL: "https://api.spotify.com/v1/",
-    headers: { Authorization: `Bearer ${token}` },
+  const response = await fetch(`https://api.spotify.com/v1/${url}`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   });
+  const data = await response.json();
+  return data as T;
 }
 
 const qualifiers = [/ (\(.*\))/];
@@ -73,23 +76,24 @@ type ExtractPromise<T> = T extends Promise<infer U> ? U : never;
 export type Playlist = ExtractPromise<ReturnType<typeof getPlaylist>>;
 
 export async function getPlaylist(playlistId: string) {
-  const spotify = await getClient();
-  const { data: playlist } = await spotify.get<PlaylistResponse>(
-    `playlists/${playlistId}/tracks`
+  const playlist = await makeSpotifyReq<PlaylistResponse>(
+    `playlists/${playlistId}/tracks?market=US`
   );
   const tracks = await Promise.all(
     playlist.items
       .map(item => item.track)
-      .map(async ({ album, artists }) => {
-        const v = Vibrant.from(album.images[1].url);
-        const palette = await v.getPalette();
+      .map(async ({ album, artists, preview_url, name, id }) => {
         return {
-          artists: artists.map(a => a.name),
-          album: removeQualifiers(album.name),
+          artists: artists.map(a => ({ id: a.id, name: a.name, uri: a.uri })),
+          album: {
+            id: album.id,
+            name: removeQualifiers(album.name),
+            uri: album.uri,
+          },
           // 0: 640px, 1: 300px, 2: 64px
           img: album.images[1].url,
           uri: album.uri,
-          palette,
+          preview: preview_url,
         };
       })
   );

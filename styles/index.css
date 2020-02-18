@@ -5,3 +5,19 @@
 body {
   font-family: 'Titillium Web', sans-serif;
 }
+
+.audio-hover:hover {
+  opacity: 0.4;
+}
+
+.primary {
+  fill: #fff;
+}
+
+.secondary {
+  fill: #666;
+}
+
+.icon-play {
+  opacity: 1;
+}
