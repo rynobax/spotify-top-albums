@@ -8,6 +8,16 @@ import { getPlaylist, Playlist } from "../spotify";
 
 import "../styles/index.css";
 
+let cacheIsMobile: boolean | undefined;
+function isMobile() {
+  if (cacheIsMobile === undefined) {
+    cacheIsMobile = /iPhone|iPad|iPod|Android/i.test(
+      window.navigator.userAgent
+    );
+  }
+  return cacheIsMobile;
+}
+
 interface InitialProps {
   playlist: Playlist;
 }
@@ -17,14 +27,29 @@ const Home: NextComponentType<NextPageContext, InitialProps, InitialProps> = ({
 }) => {
   // Not all tracks have preview
   const audioRefs = useRef<Array<HTMLAudioElement | null>>([]);
+  const nowPlaying = useRef<number | null>(null);
 
   function playOrPause(i: number) {
     const refs = audioRefs.current;
     if (!refs) return;
     const ref = refs[i];
     if (!ref) return;
-    if (ref.paused) ref.play();
-    else ref.pause();
+    // Quiet the music down on desktop
+    if (!isMobile()) ref.volume = 0.1;
+
+    const npNdx = nowPlaying.current;
+    if (npNdx !== null && npNdx !== i) {
+      const npref = refs[npNdx];
+      npref.pause();
+    }
+
+    if (ref.paused) {
+      nowPlaying.current = i;
+      ref.play();
+    } else {
+      nowPlaying.current = null;
+      ref.pause();
+    }
   }
 
   return (
