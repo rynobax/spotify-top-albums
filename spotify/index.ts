@@ -4,14 +4,21 @@ import { PlaylistResponse } from "./types/playlist";
 
 // albums: 1D9hvrANrHxVGGVx49v4x1
 
-const ID = process.env.ID;
-const SECRET = process.env.SECRET;
-const REFRESH_TOKEN = process.env.REFRESH_TOKEN;
+// typeof window === "undefined" checks if we are in node
+// If not, the code gets stripped by webpack
 
-const inNode = typeof window === "undefined";
+let ID;
+let SECRET;
+let REFRESH_TOKEN;
+
+if (typeof window === "undefined") {
+  ID = process.env.ID;
+  SECRET = process.env.SECRET;
+  REFRESH_TOKEN = process.env.REFRESH_TOKEN;
+}
 
 function b64Encode(str: string) {
-  if (inNode) {
+  if (typeof window === "undefined") {
     return Buffer.from(str).toString("base64");
   } else {
     return btoa(str);
@@ -19,9 +26,8 @@ function b64Encode(str: string) {
 }
 
 const BASIC_AUTH = b64Encode(`${ID}:${SECRET}`);
-console.log(BASIC_AUTH);
 
-if (inNode) {
+if (typeof window === "undefined") {
   if (!ID || !SECRET || !REFRESH_TOKEN)
     throw Error("Did not find one of ID, SECRET, REFRESH_TOKEN, check .env");
 }
