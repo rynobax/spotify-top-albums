@@ -88,20 +88,22 @@ export async function getPlaylist(playlistId: string) {
   const tracks = await Promise.all(
     playlist.items
       .map(item => item.track)
-      .map(async ({ album, artists, preview_url, name, id }) => {
-        return {
-          artists: artists.map(a => ({ id: a.id, name: a.name, uri: a.uri })),
-          album: {
-            id: album.id,
-            name: removeQualifiers(album.name),
-            uri: album.uri,
-          },
-          // 0: 640px, 1: 300px, 2: 64px
-          img: album.images[1].url,
+      .map(async ({ album, preview_url }) => ({
+        artists: album.artists.map(a => ({
+          id: a.id,
+          name: a.name,
+          uri: a.uri,
+        })),
+        album: {
+          id: album.id,
+          name: removeQualifiers(album.name),
           uri: album.uri,
-          preview: preview_url,
-        };
-      })
+        },
+        // 0: 640px, 1: 300px, 2: 64px
+        img: album.images[1].url,
+        uri: album.uri,
+        preview: preview_url,
+      }))
   );
 
   return tracks;
